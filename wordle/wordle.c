@@ -45,15 +45,12 @@ int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
 void feedback(const char *guess, const char *target) {
   for (int i = 0; i < WORD_LENGTH - 1; i++) {
     if (guess[i] == target[i]) {
-      // printf(GREEN " %c " RESET, guess[i]);
       all[i].letter = guess[i];
       all[i].state = GOOD;
     } else if (strchr(target, guess[i])) {
-      // printf(YELLOW " %c " RESET, guess[i]);
       all[i].letter = guess[i];
       all[i].state = EXISTS;
     } else {
-      // printf(GRAY " %c " RESET, guess[i]);
       all[i].letter = guess[i];
       all[i].state = NUH;
     }
@@ -77,8 +74,8 @@ int check_word() {
 
   if (strlen(guess) != 5) {
     printf("\033[A\033[K"); // Move up one line and clear it
-    printf("|  must be 5 letter please   |\n");
-    printf("|============================|\n");
+    printf("|   must be 5 letter please   |\n");
+    printf("|=============================|\n");
     return -1;
   }
 
