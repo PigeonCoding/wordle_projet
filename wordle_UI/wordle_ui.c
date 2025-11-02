@@ -3,7 +3,7 @@
 
 #define ATTEMPTS 6
 
-#if 1
+#if 0
 #define GREEN "\033[32m"  // green background I think?
 #define YELLOW "\033[33m" // yellow background?
 #define GRAY "\033[90m"   // gray background?
@@ -17,7 +17,6 @@
 
 void petty_print() {
   printf("\033[A\033[K"); // Move up one line and clear it
-  // printf("|");
   for (int i = 0; i < WORD_LENGTH - 1; i++) {
 
     switch (all[i].state) {
@@ -71,6 +70,5 @@ int main() {
     printf("|=============================|\n");
   }
 
-  // printf("ui\n");
   return 0;
 }
