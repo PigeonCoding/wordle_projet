@@ -1,4 +1,4 @@
- #include <stdio.h>
+  #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -12,6 +12,15 @@
 #define GRAY    "\x1b[47m\x1b[30m" // gray background?
 #define RESET   "\x1b[0m"
 
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+
+
 // importing the file
 int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
     FILE *file = fopen(filename, "r");
@@ -19,15 +28,22 @@ int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
         printf("Error: could not open %s\n", filename);
         return 0;
     }
-
+    
     int count = 0;
     while (count < MAX_WORDS && fscanf(file, "%5s", words[count]) == 1)
-        count++;
-
+    count++;
+    
     fclose(file);
     return count;
 }
 
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
 // feedback
 void feedback(const char *guess, const char *target) {
     for (int i = 0; i < 5; i++) {
@@ -51,13 +67,14 @@ int main() {
 
     char guess[WORD_LENGTH];
     int attempts = 6;
-
-    printf("=====================================\n");
-    printf("             WORDLE BY FLAN        \n");
-    printf("=====================================\n");
-    printf("Guess the 5-letter word. You have %d attempts.\n", attempts);
-
+    
     while (attempts > 0) {
+        clearScreen();
+        
+        printf("=====================================\n");
+        printf("             WORDLE BY FLAN        \n");
+        printf("=====================================\n");
+        printf("Guess the 5-letter word. You have %d attempts.\n", attempts);
         printf("\nEnter your guess: ");
         scanf("%5s", guess);
 
@@ -79,10 +96,14 @@ int main() {
         }
 
         attempts--;
-        printf("Attempts left: %d\n", attempts);
+        printf("Attempts left: %d\n", attempts); 
+        printf("\nPress Enter to continue...");
+        getchar(); 
+        getchar(); 
     }
 
     printf("\nOut of attempts! The word was: %s\n", target);
     return 0;
 }
+
 
