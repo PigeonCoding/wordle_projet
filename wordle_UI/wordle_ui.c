@@ -69,6 +69,8 @@ int main() {
     printf("|    You have %d attempts.     |\n", a);
     printf("|=============================|\n");
   }
+  
+  printf("the corrrect word was %s\n", target);
 
   return 0;
 }
