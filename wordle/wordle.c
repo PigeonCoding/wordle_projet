@@ -11,15 +11,12 @@ int wordCount = 0;
 char words[MAX_WORDS][WORD_LENGTH] = {0};
 const char *target = NULL;
 char guess[WORD_LENGTH] = {0};
+char guess_copy[WORD_LENGTH] = {0};
 
 #define MAX_WORDS 6969
 #define WORD_LENGTH 6
 
-enum {
-  NUH,
-  GOOD,
-  EXISTS
-};
+enum { NUH, GOOD, EXISTS };
 
 typedef struct {
   char letter;
@@ -42,12 +39,49 @@ int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
   return count;
 }
 
-void feedback(const char *guess, const char *target) {
+int char_in_str(char c, const char *str) {
+  int ret = 0;
+
+  for (int cc = 0; cc < WORD_LENGTH - 1; cc++) {
+    if (str[cc] == c)
+      ret++;
+  }
+
+  return ret;
+}
+
+void removeNoccurences(char *str, char c, int num) {
+  int len = strlen(str);
+
+  for (int i = len - 1; i >= 0 && num > 0; i--) {
+    if (str[i] == c) {
+      num--;
+      str[i] = ' ';
+    }
+  }
+}
+
+void dedup_str(char *str) {
   for (int i = 0; i < WORD_LENGTH - 1; i++) {
-    if (guess[i] == target[i]) {
+    if (char_in_str(str[i], target) < char_in_str(str[i], str)) {
+      int rem = char_in_str(str[i], str) -
+                char_in_str(str[i], target);
+
+      removeNoccurences(str, str[i], rem);
+    }
+  }
+}
+
+void feedback(const char *guess, const char *target) {
+
+  memcpy(guess_copy, guess, WORD_LENGTH);
+  dedup_str(guess_copy);
+
+  for (int i = 0; i < WORD_LENGTH - 1; i++) {
+    if (guess_copy[i] == target[i]) {
       all[i].letter = guess[i];
       all[i].state = GOOD;
-    } else if (strchr(target, guess[i])) {
+    } else if (strchr(target, guess_copy[i])) {
       all[i].letter = guess[i];
       all[i].state = EXISTS;
     } else {
