@@ -36,6 +36,8 @@ void petty_print() {
 
 int main() {
 
+  const char *attemp_str[] = {"attempts.", "attempt. "};
+
   if (init_wordle())
     return 1;
 
@@ -66,10 +68,10 @@ int main() {
 
     a--;
     printf("|=============================|\n");
-    printf("|    You have %d attempts.     |\n", a);
+    printf("|    You have %d %s     |\n", a, attemp_str[a == 1]);
     printf("|=============================|\n");
   }
-  
+
   printf("the corrrect word was %s\n", target);
 
   return 0;
