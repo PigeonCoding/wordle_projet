@@ -1,0 +1,167 @@
+// Still in procces
+Report
+Topic : Wordle solver
+Tool : C language
+
+I . Strategy Description 
+ A . the strategy : using word from a dictionair who contains 
+Max_Word : 6969
+Word_length :6  
+
+The feedback strategy : we compare the word of the user by our word letter by letter until the end of word by (target[i] and all[i])
+If the letter of guess = to word of user then we say “GOOD”:
+if (guess_copy[i] == target[i]) {
+      all[i].letter = guess[i];
+      all[i].state = GOOD;
+}
+And if the letter is exist and not in position i we say “exist”:
+ else if (strchr(target, guess_copy[i])) {
+      all[i].letter = guess[i];
+      all[i].state = EXISTS;
+} 
+
+Else if is it false we say “NUH” :
+else {
+      all[i].letter = guess[i];
+      all[i].state = NUH;
+    }
+ 
+C.The approach is effective : because it simple and hes not take as much of complexity and he suits the problemwd
+
+Data stucture 
+The data structure : in our wordle project we mainly used arrays , including array for managing the word , game state and storing words
+
+
+
+
+the solver has using a methode pattern_code , this mathode make a theory for all words of the dictionary by make a codification of all of them using a loop 
+ for (int i = 0; i < 5; i++) {
+        c = c * 3 + fb[i].state;
+}
+This loop check state of all leters for 1 to 6 and multiply it by 3 to get result c 
+We check the result in every attempts and then we multiply by I to get the final score 
+ int score = 0;
+    for (int i = 0; i < 243; i++) {
+        if (counts[i] > 0) {
+            score += counts[i] * counts[i];
+        }
+    }
+
+    return score;
+}
+We check the all the patterns and we chose the one who gets more variety and check the score  
+
+and choose the less score , the less score we get the more the solver go to find the word guess  
+
+Until the attempts end  .
+
+the alternative d.s : 
+We consider using a linked list to store the dictionary words its same complixity and we get same result 
+
+D.Complexity analysis :
+The code compares the guessed word with each word in the dictionary the word.length is constant so  its o(n) 
+
+Memory: 
+The dictionary has N*6 
+Game state o(1)
+Game logic o(N)
+so The space complexity of the system is linear o(n)
+
+// Provide graphe :
+d. Code documentation :
+solver Architecture :
+1. simulate_feedback :This function simulates the Wordle feedback mechanism by comparing a guessed word with a target word.
+ simulate_feedback
+  -----------------
+  Simulates Wordle feedback rules between a guessed word and a target word.
+ 
+  Parameters:
+    guess  - the guessed word proposed by the solver
+    target - a candidate word from the remaining pool
+    out    - array of size 5 that stores feedback states for each letter
+ 
+  Logic:
+    1. Copy the guess to a temporary buffer.
+    2. Remove extra duplicated letters to respect Wordle rules.
+    3. Assign a state for each letter:
+         GOOD   -> correct letter and position
+         EXISTS -> correct letter, wrong position
+         NUH    -> letter not in the word
+ 
+void simulate_feedback(const char *guess, const char *target, attempt_response out[5]) {
+    ...
+}
+
+
+2. match
+This function checks whether a candidate word is consistent with the feedback obtained from the previous guess
+match
+ 
+Checks whether a candidate word is compatible with the feedback
+obtained from the last guess.
+ 
+ Parameters:
+cand  - candidate word from the pool
+ guess - last guessed word
+ 
+  Return:
+   1 if the candidate produces the same feedback pattern
+   0 otherwise
+ 
+  Logic:
+  - Simulate feedback between guess and candidate.
+  - Compare it with the actual feedback.
+int match(const char *cand, const char *guess) {
+    ...
+}
+3 filter_pool
+This module reduces the candidate pool by eliminating words that contradict the received feedback
+
+ filter_pool
+ 
+  Removes all invalid words from the candidate pool.
+ 
+  Parameters:
+    guess - the last guessed word
+ 
+  Logic:
+    - Iterate over all remaining candidates.
+    - Keep only those that match the feedback constraints.
+   - Update the pool size accordingly.
+void filter_pool(const char *guess) {
+    ...
+}
+4. entropy_score:
+This function evaluates how informative a guess is using an entropy-inspired scoring method
+entropy_score
+  -------------
+  Evaluates how informative a guess is.
+ 
+  Parameters:
+    g - guessed word
+ 
+  Return:
+    An integer score representing guess quality (lower is better).
+ 
+  Logic:
+    - Simulate feedback for each remaining candidate.
+    - Encode feedback into a pattern code.
+   - Penalize guesses that poorly split the search space.
+int entropy_score(const char *g) {
+    ...
+}
+5. best_entropy_guess :
+This function selects the optimal next guess by minimizing the entropy score
+  best_entropy_guess
+
+  Selects the best next guess using entropy minimization.
+ 
+  Parameters:
+    out - buffer where the selected guess is stored
+ 
+ Logic:
+    - Compute entropy score for all candidates.
+   - Choose the word with the minimum score.
+void best_entropy_guess(char *out) {
+    ...
+}
