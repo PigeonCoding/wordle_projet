@@ -5,45 +5,9 @@
 char pool[MAX_WORDS][WORD_LENGTH];
 int pool_count = 0;
 
-void simulate_feedback(const char *guess, const char *target, attempt_response out[5]){
-    char temp_guess[WORD_LENGTH];
-    memcpy(temp_guess, guess, WORD_LENGTH);
-
-    for (int i = 0; i < 5; i++) {
-        int in_target = 0, in_guess = 0;
-
-        for (int j = 0; j < 5; j++)
-            if (target[j] == guess[i]) in_target++;
-
-        for (int j = 0; j < 5; j++)
-            if (temp_guess[j] == guess[i]) in_guess++;
-
-        while (in_guess > in_target) {
-            for (int j = 4; j >= 0; j--) {
-                if (temp_guess[j] == guess[i]) {
-                    temp_guess[j] = ' ';
-                    in_guess--;
-                    break;
-                }
-            }
-        }
-    }
-    for (int i = 0; i < 5; i++) {
-        if (temp_guess[i] == target[i]) {
-            out[i].state = GOOD;
-        } else if (strchr(target, temp_guess[i])) {
-            out[i].state = EXISTS;
-        } else {
-            out[i].state = NUH;
-        }
-        out[i].letter = guess[i];
-    }
-
-}
-
 int match(const char *cand, const char *guess) {
     attempt_response sim[5];
-    simulate_feedback(guess, cand, sim);
+    feedback(guess, cand, sim);
 
     for (int i = 0; i < 5; i++)
         if (sim[i].state != all[i].state)
@@ -76,7 +40,7 @@ int entropy_score(const char *g) {
     attempt_response sim[5];
 
     for (int i = 0; i < pool_count; i++) {
-        simulate_feedback(g, pool[i], sim);
+        feedback(g, pool[i], sim);
         int code = pattern_code(sim);
         counts[code]++;
     }
@@ -114,10 +78,8 @@ int main() {
         memcpy(pool[i], words[i], WORD_LENGTH);
 
     pool_count = wordCount;
-  printf("|=============================|\n");
-  printf("|     SOLVER BY TEAM FLAN     |\n");
-  printf("|=============================|\n");
-  printf("| MY first guess = brain      |\n");
+    printf("|=============================|\n");
+    printf("|     SOLVER BY TEAM FLAN     |\n");
 
     for (int turn = 1; turn <= 6; turn++) {
 
@@ -128,12 +90,34 @@ int main() {
         } else {
             best_entropy_guess(guess_local);
         }
-        printf("|=============================|\n");
-        printf("  Turn %d guess: %s        \n", turn, guess_local);
-        
         memcpy(guess, guess_local, WORD_LENGTH);
-
         int r = check_word();
+
+        printf("|=============================|\n");
+        printf("|    Turn %d guess: ", turn);
+
+        #define GREEN "\033[32m"
+        #define YELLOW "\033[33m"
+        #define GRAY "\033[90m"
+        #define RED "\033[31m"
+        #define RESET "\033[0m"
+
+        for (int i = 0; i < 5; i++) {
+            switch (all[i].state) {
+            case NUH:
+              printf(GRAY "%c" RESET, all[i].letter);
+              break;
+            case GOOD:
+              printf(GREEN"%c"RESET, all[i].letter);
+              break;
+            case EXISTS:
+              printf(YELLOW"%c"RESET, all[i].letter);
+              break;
+            }
+        }
+        printf("      |\n");
+        
+
         if (r == 1) {
             printf("|=============================|\n");
             printf("|    SOLVED word was %s    |\n",target);
@@ -142,11 +126,10 @@ int main() {
         }
 
         filter_pool(guess_local);
-        printf("   %d candidates left      \n", pool_count);
-        printf("|=============================|\n");
+        printf("|   %4.d candidates left      |\n", pool_count);
     }
     printf("|=============================|\n");
-    printf("|  LOSER word was was %s  |\n", target);
+    printf("|  "RED"LOSER"RESET" word was was %s   |\n", target);
     printf("|=============================|\n");
     return 0;
 }
