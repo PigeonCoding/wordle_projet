@@ -11,7 +11,6 @@ int wordCount = 0;
 char words[MAX_WORDS][WORD_LENGTH] = {0};
 const char *target = NULL;
 char guess[WORD_LENGTH] = {0};
-char guess_copy[WORD_LENGTH] = {0};
 
 #define MAX_WORDS 6969
 #define WORD_LENGTH 6
@@ -24,6 +23,7 @@ typedef struct {
 } attempt_response;
 
 attempt_response all[WORD_LENGTH - 1] = {0};
+
 int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
   FILE *file = fopen(filename, "r");
   if (!file) {
@@ -39,62 +39,59 @@ int Dictionary(char words[MAX_WORDS][WORD_LENGTH], const char *filename) {
   return count;
 }
 
-int char_in_str(char c, const char *str) {
-  int ret = 0;
-
-  for (int cc = 0; cc < WORD_LENGTH - 1; cc++) {
-    if (str[cc] == c)
-      ret++;
-  }
-
-  return ret;
-}
-
-void removeNoccurences(char *str, char c, int num) {
-  int len = strlen(str);
-
-  for (int i = len - 1; i >= 0 && num > 0; i--) {
-    if (str[i] == c) {
-      num--;
-      str[i] = ' ';
+bool is_valid_word(const char *guess) {
+  for (int i = 0; i < wordCount; i++) {
+    if (memcmp(guess, &words[i][0], 5) == 0) {
+      return true;
     }
   }
+  return false;
 }
 
-void dedup_str(char *str) {
-  for (int i = 0; i < WORD_LENGTH - 1; i++) {
-    if (char_in_str(str[i], target) < char_in_str(str[i], str)) {
-      int rem = char_in_str(str[i], str) -
-                char_in_str(str[i], target);
-
-      removeNoccurences(str, str[i], rem);
-    }
-  }
-}
-
-void feedback(const char *guess, const char *target) {
-
+int feedback(const char *guess, const char *target, attempt_response out[5]) {
+  if (!is_valid_word(guess)) return 1;
+  char guess_copy[WORD_LENGTH] = {0};
   memcpy(guess_copy, guess, WORD_LENGTH);
-  dedup_str(guess_copy);
 
-  for (int i = 0; i < WORD_LENGTH - 1; i++) {
-    if (guess_copy[i] == target[i]) {
-      all[i].letter = guess[i];
-      all[i].state = GOOD;
-    } else if (strchr(target, guess_copy[i])) {
-      all[i].letter = guess[i];
-      all[i].state = EXISTS;
-    } else {
-      all[i].letter = guess[i];
-      all[i].state = NUH;
+  for (int i = 0; i < 5; i++) {
+    int in_target = 0, in_guess = 0;
+
+    for (int j = 0; j < 5; j++)
+      if (target[j] == guess[i]) in_target++;
+
+    for (int j = 0; j < 5; j++) 
+      if (guess_copy[j] == guess[i]) 
+        in_guess++;
+
+    while (in_guess > in_target) {
+      for (int j = 4; j >= 0; j--) {
+        if (guess_copy[j] == guess[i]) {
+          guess_copy[j] = ' ';
+          in_guess--;
+          break;
+        }
+      }
     }
   }
+    
+  for (int i = 0; i < 5; i++) {
+    if (guess_copy[i] == target[i]) {
+      out[i].state = GOOD;
+    } else if (strchr(target, guess_copy[i])) {
+      out[i].state = EXISTS;
+    } else {
+      out[i].state = NUH;
+    }
+    out[i].letter = guess[i];
+  }
+
+  return 0;
 }
 
 #define TO_LOWER(c) ((c) >= 'A' && (c) <= 'Z' ? (c) + 'a' - 'A' : (c))
 
 int init_wordle() {
-  srand(time(NULL));
+  srand(time(0));
   wordCount = Dictionary(words, "dictionary.txt");
   if (wordCount == 0)
     return 1;
@@ -117,10 +114,15 @@ int check_word() {
     guess[g] = TO_LOWER(guess[g]);
   }
 
-  feedback(guess, target);
+  if (feedback(guess, target, all)) {
+    printf("\033[A\033[K"); // Move up one line and clear it
+    printf("|     must be a valid word    |\n");
+    printf("|=============================|\n");
+    return -1;
+
+  }
 
   if (strcmp(guess, target) == 0) {
-    // printf("\nCorrect! You found the word!\n");
     return 1;
   }
 
