@@ -3,17 +3,10 @@
 
 #define ATTEMPTS 6
 
-#if 0
-#define GREEN "\033[32m"  // green background I think?
-#define YELLOW "\033[33m" // yellow background?
-#define GRAY "\033[90m"   // gray background?
-#define RESET "\033[0m"
-#else
-#define GREEN "\x1b[42m\x1b[30m"  // green background I think?
-#define YELLOW "\x1b[43m\x1b[30m" // yellow background?
-#define GRAY "\x1b[47m\x1b[30m"   // gray background?
+#define GREEN "\x1b[42m\x1b[30m"  // green background
+#define YELLOW "\x1b[43m\x1b[30m" // yellow background
+#define GRAY "\x1b[47m\x1b[30m"   // gray background
 #define RESET "\x1b[0m"
-#endif
 
 void petty_print() {
   printf("\033[A\033[K"); // Move up one line and clear it
@@ -71,8 +64,11 @@ int main() {
     printf("|    You have %d %s     |\n", a, attemp_str[a == 1]);
     printf("|=============================|\n");
   }
-
-  printf("the corrrect word was %s\n", target);
+  
+  #define RED "\033[31m"
+  printf("|           "RED"LOSER"RESET"             |\n");
+  printf("| the corrrect word was %s |\n", target);
+  printf("|=============================|\n");
 
   return 0;
 }
