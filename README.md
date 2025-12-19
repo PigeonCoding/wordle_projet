@@ -18,5 +18,5 @@ an algorithm that automatically tries to solve the game
 
 ## Credits
 - [PigeonCoding](https://github.com/PigeonCoding/) (Messaoudi Wassim)
-- [D-Falco](https://github.com/D-Falco) (Mahdi Mohammed Nazim)
+- [D-Falco](https://github.com/D-Falco) (Mahdi Mohamed Nazim)
 - [mahio323](https://github.com/mahio323) (Boudraf Mohyiddine Ibrahim)
