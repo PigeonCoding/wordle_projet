@@ -1,0 +1,98 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Page setup
+\geometry{top=1in, bottom=1in, left=1in, right=1in}
+
+% Code snippet styling
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{\textbf{Project Report: Wordle Game and Automated Solver}}
+\author{Team Flan \\ CS Final Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    This report documents the design and implementation of a text-based clone of the game Wordle, developed in C. In addition to the playable game, the project includes a statistical solver capable of guessing the target word autonomously. The project focuses on modular design, string manipulation, and entropy-based search algorithms.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The goal of this project was to recreate the mechanics of the viral word game "Wordle" within a Unix-style command-line environment. The project consists of three main components: a shared logic library, a user interface, and an AI solver.
+
+\section{System Architecture}
+We organized the code into modular files to separate the backend logic from the frontend presentation.
+
+\begin{itemize}
+    \item \textbf{\texttt{wordle.c}}: This file acts as the "engine." It handles dictionary loading, memory management, and the core rules of the game \texttt{}.
+    \item \textbf{\texttt{wordle\_ui.c}}: This is the playable version of the game. It imports \texttt{wordle.c} and adds a visual layer using ANSI escape codes for coloring \texttt{}.
+    \item \textbf{\texttt{solver.c}}: An algorithmic solver that uses the logic from \texttt{wordle.c} to simulate games and determine optimal guesses \texttt{}.
+\end{itemize}
+
+\section{Core Logic Implementation}
+
+\subsection{Data Structures}
+To manage the state of the game, we avoided complex objects and stuck to simple arrays and structs. We defined a struct \texttt{attempt\_response} to hold the feedback for each letter:
+\begin{lstlisting}[language=C]
+typedef struct {
+  char letter;
+  int state;
+} attempt_response;
+\end{lstlisting}
+The \texttt{state} integer corresponds to an enum representing \texttt{NUH} (Gray), \texttt{GOOD} (Green), or \texttt{EXISTS} (Yellow) \texttt{}.
+
+\subsection{Dictionary Management}
+The dictionary is loaded from a text file named \texttt{dictionary.txt} \texttt{}. We set a hard limit of 6,969 words for the dictionary size \texttt{}. The \texttt{init\_wordle()} function handles the file I/O using \texttt{fscanf} and randomly selects a target word using \texttt{srand(time(0))} \texttt{}.
+
+\subsection{The Feedback Algorithm}
+The most challenging logic in Wordle is handling duplicate letters correctly (e.g., if the target is "APPLE" and the guess is "PUPPY"). A naive check would mark all P's as yellow, which is incorrect.
+
+Our solution, implemented in the \texttt{feedback} function, uses a two-pass approach:
+\begin{enumerate}
+    \item We count the frequency of each letter in both the target and the guess \texttt{}.
+    \item If a letter appears more times in the guess than in the target, we mark the excess instances as 'ignored' (or gray) starting from the right side of the word \texttt{}.
+    \item Finally, we iterate through the cleaned guess to assign the \texttt{GOOD}, \texttt{EXISTS}, or \texttt{NUH} states \texttt{}.
+\end{enumerate}
+
+\section{User Interface}
+The UI runs in the terminal. To make the game visually distinct, we used ANSI escape sequences.
+\begin{itemize}
+    \item \textbf{Coloring:} Macros like \texttt{GREEN ("\textbackslash x1b[42m")} and \texttt{YELLOW ("\textbackslash x1b[43m")} change the background color of the text during the print phase \texttt{}.
+    \item \textbf{Screen Refreshing:} To prevent the terminal from getting cluttered, we used \texttt{"\textbackslash 033[A\textbackslash 033[K"} to move the cursor up and clear lines, creating a smoother frame update when the user enters an invalid word \texttt{}.
+\end{itemize}
+
+\section{The Automated Solver}
+The highlight of the project is \texttt{solver.c}. It does not cheat by peeking at the target; instead, it uses information theory to narrow down the possibilities.
+
+\subsection{Strategy: Entropy Reduction}
+The solver starts with the full pool of words (approx. 7,000). For every potential guess, it calculates a score based on how well that guess splits the remaining pool.
+\begin{itemize}
+    \item The function \texttt{entropy\_score} simulates the outcome of a guess against every other valid word \texttt{}.
+    \item It groups the results into pattern codes (using base-3 math for the 5 slots) \texttt{}.
+    \item It sums the squares of these group sizes. A lower score implies the guess distributes the remaining candidates more evenly, providing more information \texttt{}.
+\end{itemize}
+
+\subsection{Performance Optimization}
+Calculating entropy for 7,000 words against 7,000 words is computationally expensive ($O(n^2)$). To speed up the first turn, we hardcoded the starting word to "brain" \texttt{}. We found this word provides a statistically strong opening without waiting for the CPU to calculate it every time.
+
+\subsection{Filtering}
+After making a guess and receiving feedback (Green/Yellow/Gray), the solver calls \texttt{filter\_pool}. This function iterates through the current candidate list and removes any word that wouldn't have produced that specific feedback pattern \texttt{}. This rapidly reduces the pool size, often going from thousands to single digits in 3 turns.
+
+\end{document}
