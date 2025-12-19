@@ -1,3 +1,3 @@
 
 
-gcc .\solver\solver.c -o solver_bin
+gcc .\solver.c -o solver_bin

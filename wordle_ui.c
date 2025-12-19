@@ -1,4 +1,4 @@
-#include "../wordle/wordle.c"
+#include "./wordle.c"
 #include <stdio.h>
 
 #define ATTEMPTS 6
